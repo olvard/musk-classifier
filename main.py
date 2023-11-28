@@ -1,11 +1,12 @@
 import csv
 
-file_path = "data/elon_musk_tweets.csv"  
+file_path = "data/elon_musk_tweets.csv"
+
 
 try:
     with open(file_path, 'r', encoding='utf-8') as csv_file:
         csv_reader = csv.reader(csv_file)
-        
+
         # Skip header
         header = next(csv_reader)
         print(f"CSV File Header: {header}")
