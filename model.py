@@ -24,14 +24,14 @@ y = combined_tweets['label']
 
 # Initialize the TF-IDF vectorizer
 # You can adjust max_features as needed
-tfidf_vectorizer = TfidfVectorizer(max_features=1500)
+tfidf_vectorizer = TfidfVectorizer(max_features=2500)
 
 # Transform the text data into TF-IDF features
 X_tfidf = tfidf_vectorizer.fit_transform(X)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
-    X_tfidf, y, test_size=0.2, random_state=40)
+    X_tfidf, y, test_size=0.2, random_state=42)
 
 
 # Initialize a classifier (SVM in this case)
