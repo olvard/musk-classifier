@@ -1,136 +1,108 @@
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.colors import ListedColormap
-
-from sklearn.datasets import make_circles, make_classification, make_moons
-from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
-from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
-from sklearn.inspection import DecisionBoundaryDisplay
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+from sklearn.metrics import accuracy_score, classification_report
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.neural_network import MLPClassifier
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn.tree import DecisionTreeClassifier
+import numpy as np
+import matplotlib.pyplot as plt
 
-names = [
-    "Nearest Neighbors",
-    "Linear SVM",
-    "RBF SVM",
-    "Gaussian Process",
-    "Decision Tree",
-    "Random Forest",
-    "Neural Net",
-    "AdaBoost",
-    "Naive Bayes",
-    "QDA",
-]
+combined_tweets = pd.read_csv('combined.csv')
 
-classifiers = [
-    KNeighborsClassifier(3),
-    SVC(kernel="linear", C=0.025, random_state=42),
-    SVC(gamma=2, C=1, random_state=42),
-    GaussianProcessClassifier(1.0 * RBF(1.0), random_state=42),
-    DecisionTreeClassifier(max_depth=5, random_state=42),
-    RandomForestClassifier(
-        max_depth=5, n_estimators=10, max_features=1, random_state=42
-    ),
-    MLPClassifier(alpha=1, max_iter=1000, random_state=42),
-    AdaBoostClassifier(random_state=42),
-    GaussianNB(),
-    QuadraticDiscriminantAnalysis(),
-]
+print(combined_tweets.head())
 
-X, y = make_classification(
-    n_features=2, n_redundant=0, n_informative=2, random_state=1, n_clusters_per_class=1
-)
-rng = np.random.RandomState(2)
-X += 2 * rng.uniform(size=X.shape)
-linearly_separable = (X, y)
+# Fill missing values in the 'content' column and convert non-string types to strings
+combined_tweets['content'] = combined_tweets['content'].fillna('').astype(str)
 
-datasets = [
-    make_moons(noise=0.3, random_state=0),
-    make_circles(noise=0.2, factor=0.5, random_state=1),
-    linearly_separable,
-]
+# Split data into features (tweets) and labels
+X = combined_tweets['content']
+y = combined_tweets['label']
 
-figure = plt.figure(figsize=(27, 9))
-i = 1
-# iterate over datasets
-for ds_cnt, ds in enumerate(datasets):
-    # preprocess dataset, split into training and test part
-    X, y = ds
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.4, random_state=42
-    )
+# Initialize the TF-IDF vectorizer
+# You can adjust max_features as needed
+tfidf_vectorizer = TfidfVectorizer(max_features=1500)
 
-    x_min, x_max = X[:, 0].min() - 0.5, X[:, 0].max() + 0.5
-    y_min, y_max = X[:, 1].min() - 0.5, X[:, 1].max() + 0.5
+# Transform the text data into TF-IDF features
+X_tfidf = tfidf_vectorizer.fit_transform(X)
 
-    # just plot the dataset first
-    cm = plt.cm.RdBu
-    cm_bright = ListedColormap(["#FF0000", "#0000FF"])
-    ax = plt.subplot(len(datasets), len(classifiers) + 1, i)
-    if ds_cnt == 0:
-        ax.set_title("Input data")
-    # Plot the training points
-    ax.scatter(X_train[:, 0], X_train[:, 1], c=y_train,
-               cmap=cm_bright, edgecolors="k")
-    # Plot the testing points
-    ax.scatter(
-        X_test[:, 0], X_test[:, 1], c=y_test, cmap=cm_bright, alpha=0.6, edgecolors="k"
-    )
-    ax.set_xlim(x_min, x_max)
-    ax.set_ylim(y_min, y_max)
-    ax.set_xticks(())
-    ax.set_yticks(())
-    i += 1
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(
+    X_tfidf, y, test_size=0.2, random_state=20)
 
-    # iterate over classifiers
-    for name, clf in zip(names, classifiers):
-        ax = plt.subplot(len(datasets), len(classifiers) + 1, i)
 
-        clf = make_pipeline(StandardScaler(), clf)
-        clf.fit(X_train, y_train)
-        score = clf.score(X_test, y_test)
-        DecisionBoundaryDisplay.from_estimator(
-            clf, X, cmap=cm, alpha=0.8, ax=ax, eps=0.5
-        )
+# --------------------classifiers-------------------
 
-        # Plot the training points
-        ax.scatter(
-            X_train[:, 0], X_train[:,
-                                   1], c=y_train, cmap=cm_bright, edgecolors="k"
-        )
-        # Plot the testing points
-        ax.scatter(
-            X_test[:, 0],
-            X_test[:, 1],
-            c=y_test,
-            cmap=cm_bright,
-            edgecolors="k",
-            alpha=0.6,
-        )
+# Initialize classifiers
+svm_classifier = SVC(kernel='linear', random_state=42)
+rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
+knn_classifier = KNeighborsClassifier(n_neighbors=5)
 
-        ax.set_xlim(x_min, x_max)
-        ax.set_ylim(y_min, y_max)
-        ax.set_xticks(())
-        ax.set_yticks(())
-        if ds_cnt == 0:
-            ax.set_title(name)
-        ax.text(
-            x_max - 0.3,
-            y_min + 0.3,
-            ("%.2f" % score).lstrip("0"),
-            size=15,
-            horizontalalignment="right",
-        )
-        i += 1
+# Train SVM classifier
+svm_classifier.fit(X_train, y_train)
 
-plt.tight_layout()
+# Train RandomForest classifier
+rf_classifier.fit(X_train, y_train)
+
+# Train KNeighbors classifier
+knn_classifier.fit(X_train, y_train)
+
+# Make predictions
+svm_y_pred = svm_classifier.predict(X_test)
+rf_y_pred = rf_classifier.predict(X_test)
+knn_y_pred = knn_classifier.predict(X_test)
+
+# Evaluate and print accuracy for each classifier
+svm_accuracy = accuracy_score(y_test, svm_y_pred)
+rf_accuracy = accuracy_score(y_test, rf_y_pred)
+knn_accuracy = accuracy_score(y_test, knn_y_pred)
+
+# Print accuracies
+print(f"SVM Accuracy: {svm_accuracy:.2f}")
+print(f"RandomForest Accuracy: {rf_accuracy:.2f}")
+print(f"KNN Accuracy: {knn_accuracy:.2f}")
+
+# Generate classification report for SVM
+print("SVM Classification Report:")
+print(classification_report(y_test, svm_y_pred))
+
+# Generate classification report for RandomForest
+print("RandomForest Classification Report:")
+print(classification_report(y_test, rf_y_pred))
+
+# Generate classification report for KNN
+print("KNN Classification Report:")
+print(classification_report(y_test, knn_y_pred))
+
+# Visualize confusion matrix for SVM
+conf_matrix_svm = confusion_matrix(y_test, svm_y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_svm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=svm_classifier.classes_, yticklabels=svm_classifier.classes_)
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.title('SVM Confusion Matrix')
+plt.show()
+
+# Visualize confusion matrix for RandomForest
+conf_matrix_rf = confusion_matrix(y_test, rf_y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_rf, annot=True, fmt='d', cmap='Blues',
+            xticklabels=rf_classifier.classes_, yticklabels=rf_classifier.classes_)
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.title('RandomForest Confusion Matrix')
+plt.show()
+
+# Visualize confusion matrix for KNN
+conf_matrix_knn = confusion_matrix(y_test, knn_y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix_knn, annot=True, fmt='d', cmap='Blues',
+            xticklabels=knn_classifier.classes_, yticklabels=knn_classifier.classes_)
+plt.xlabel('Predicted Labels')
+plt.ylabel('True Labels')
+plt.title('KNN Confusion Matrix')
 plt.show()

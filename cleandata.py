@@ -37,7 +37,22 @@ elon['content'] = elon['content'].apply(remove_links)
 # Remove links from the 'content' column in other DataFrame
 other['content'] = other['content'].apply(remove_links)
 
+# -------------Compare length----------------
 
+elon_size = len(elon)
+other_size = len(other)
+
+print(elon_size)
+print(other_size)
+
+if other_size > elon_size:
+    # Sample 'other' DataFrame to match the length of 'elon' DataFrame
+    # Adjust random_state as needed for reproducibility
+    other = other.sample(n=elon_size, random_state=42)
+
+# Check if the sizes are now equal
+print("Size of elon DataFrame:", len(elon))
+print("Size of other DataFrame:", len(other))
 # -------------Combine Tweets-------------------
 
 combined_tweets = pd.concat([other, elon])
