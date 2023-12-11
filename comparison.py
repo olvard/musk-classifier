@@ -79,30 +79,35 @@ print(classification_report(y_test, knn_y_pred))
 
 # Visualize confusion matrix for SVM
 conf_matrix_svm = confusion_matrix(y_test, svm_y_pred)
-plt.figure(figsize=(8, 6))
-sns.heatmap(conf_matrix_svm, annot=True, fmt='d', cmap='Blues',
-            xticklabels=svm_classifier.classes_, yticklabels=svm_classifier.classes_)
-plt.xlabel('Predicted Labels')
-plt.ylabel('True Labels')
-plt.title('SVM Confusion Matrix')
-plt.show()
-
-# Visualize confusion matrix for RandomForest
-conf_matrix_rf = confusion_matrix(y_test, rf_y_pred)
-plt.figure(figsize=(8, 6))
-sns.heatmap(conf_matrix_rf, annot=True, fmt='d', cmap='Blues',
-            xticklabels=rf_classifier.classes_, yticklabels=rf_classifier.classes_)
-plt.xlabel('Predicted Labels')
-plt.ylabel('True Labels')
-plt.title('RandomForest Confusion Matrix')
-plt.show()
-
-# Visualize confusion matrix for KNN
 conf_matrix_knn = confusion_matrix(y_test, knn_y_pred)
-plt.figure(figsize=(8, 6))
+conf_matrix_rf = confusion_matrix(y_test, rf_y_pred)
+
+# Creating a figure with 1 row and 3 columns for subplots
+fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+
+# Plotting SVM Confusion Matrix
+sns.heatmap(conf_matrix_svm, annot=True, fmt='d', cmap='Blues',
+            xticklabels=svm_classifier.classes_, yticklabels=svm_classifier.classes_,
+            ax=axes[0])  # Plotting in the first subplot (index 0)
+axes[0].set_xlabel('Predicted Labels')
+axes[0].set_ylabel('True Labels')
+axes[0].set_title('SVM Confusion Matrix')
+
+# Plotting RandomForest Confusion Matrix
+sns.heatmap(conf_matrix_rf, annot=True, fmt='d', cmap='Blues',
+            xticklabels=rf_classifier.classes_, yticklabels=rf_classifier.classes_,
+            ax=axes[1])  # Plotting in the second subplot (index 1)
+axes[1].set_xlabel('Predicted Labels')
+axes[1].set_ylabel('True Labels')
+axes[1].set_title('RandomForest Confusion Matrix')
+
+# Plotting KNN Confusion Matrix
 sns.heatmap(conf_matrix_knn, annot=True, fmt='d', cmap='Blues',
-            xticklabels=knn_classifier.classes_, yticklabels=knn_classifier.classes_)
-plt.xlabel('Predicted Labels')
-plt.ylabel('True Labels')
-plt.title('KNN Confusion Matrix')
+            xticklabels=knn_classifier.classes_, yticklabels=knn_classifier.classes_,
+            ax=axes[2])  # Plotting in the third subplot (index 2)
+axes[2].set_xlabel('Predicted Labels')
+axes[2].set_ylabel('True Labels')
+axes[2].set_title('KNN Confusion Matrix')
+
+plt.tight_layout()  # Adjust layout to prevent overlapping
 plt.show()
