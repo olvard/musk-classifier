@@ -31,7 +31,7 @@ X_tfidf = tfidf_vectorizer.fit_transform(X)
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(
-    X_tfidf, y, test_size=0.2, random_state=20)
+    X_tfidf, y, test_size=0.2, random_state=40)
 
 
 # Initialize a classifier (SVM in this case)
