@@ -1,8 +1,10 @@
 import csv
 
-file_path = "data/tweets.csv" # Replace "your_csv_file.csv" with the actual CSV file name
-output_file_path = "data/modified_file_others.csv"  # Replace "modified_csv_file.csv" with the desired output file name
+# Read datafile and new file to save in
+file_path = "data/tweets.csv" 
+output_file_path = "data/modified_file_others.csv" 
 
+# Columns to delete in dataset
 columns_to_delete_musk = [0, 2, 3, 4, 5, 6, 7,8, 11, 12, 13, 15]  
 columns_to_delete_other=[2,4,5,6,7,9]
 try:
