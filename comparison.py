@@ -10,6 +10,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.naive_bayes import MultinomialNB 
 
 combined_tweets = pd.read_csv('combined.csv')
 
@@ -40,6 +41,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 svm_classifier = SVC(kernel='linear', random_state=42)
 rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
 knn_classifier = KNeighborsClassifier(n_neighbors=5)
+nb_classifier = MultinomialNB()  # Multinomial Naive Bayes
 
 # Train SVM classifier
 svm_classifier.fit(X_train, y_train)
@@ -50,20 +52,26 @@ rf_classifier.fit(X_train, y_train)
 # Train KNeighbors classifier
 knn_classifier.fit(X_train, y_train)
 
+# Train Naive Bayes classifier
+nb_classifier.fit(X_train, y_train)
+
 # Make predictions
 svm_y_pred = svm_classifier.predict(X_test)
 rf_y_pred = rf_classifier.predict(X_test)
 knn_y_pred = knn_classifier.predict(X_test)
+nb_y_pred = nb_classifier.predict(X_test) 
 
 # Evaluate and print accuracy for each classifier
 svm_accuracy = accuracy_score(y_test, svm_y_pred)
 rf_accuracy = accuracy_score(y_test, rf_y_pred)
 knn_accuracy = accuracy_score(y_test, knn_y_pred)
+nb_accuracy = accuracy_score(y_test, nb_y_pred) 
 
 # Print accuracies
 print(f"SVM Accuracy: {svm_accuracy:.2f}")
 print(f"RandomForest Accuracy: {rf_accuracy:.2f}")
 print(f"KNN Accuracy: {knn_accuracy:.2f}")
+print(f"Naive Bayes Accuracy: {nb_accuracy:.2f}") 
 
 # Generate classification report for SVM
 print("SVM Classification Report:")
@@ -77,13 +85,18 @@ print(classification_report(y_test, rf_y_pred))
 print("KNN Classification Report:")
 print(classification_report(y_test, knn_y_pred))
 
+# Generate classification report for Naive Bayes
+print("Naive Bayes Classification Report:")
+print(classification_report(y_test, nb_y_pred))
+
 # Visualize confusion matrix for SVM
 conf_matrix_svm = confusion_matrix(y_test, svm_y_pred)
 conf_matrix_knn = confusion_matrix(y_test, knn_y_pred)
 conf_matrix_rf = confusion_matrix(y_test, rf_y_pred)
+conf_matrix_nb = confusion_matrix(y_test, nb_y_pred)
 
 # Creating a figure with 1 row and 3 columns for subplots
-fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+fig, axes = plt.subplots(1, 4, figsize=(20, 4))
 
 # Plotting SVM Confusion Matrix
 sns.heatmap(conf_matrix_svm, annot=True, fmt='d', cmap='Blues',
@@ -108,6 +121,14 @@ sns.heatmap(conf_matrix_knn, annot=True, fmt='d', cmap='Blues',
 axes[2].set_xlabel('Predicted Labels')
 axes[2].set_ylabel('True Labels')
 axes[2].set_title('KNN Confusion Matrix')
+
+# Plotting Naive Bayes Confusion Matrix
+sns.heatmap(conf_matrix_nb, annot=True, fmt='d', cmap='Blues',
+            xticklabels=nb_classifier.classes_, yticklabels=nb_classifier.classes_,
+            ax=axes[3])  # Plotting in the fourth subplot (bottom-right)
+axes[3].set_xlabel('Predicted Labels')
+axes[3].set_ylabel('True Labels')
+axes[3].set_title('Naive Bayes Confusion Matrix')
 
 plt.tight_layout()  # Adjust layout to prevent overlapping
 plt.show()
